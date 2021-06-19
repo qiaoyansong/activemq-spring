@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       ">
+    <!-- 配置IOC注解解析器 -->
+    <context:component-scan base-package="com.qiaoyansong"/>
+    <!--    配置DI注解解析器-->
+    <context:annotation-config/>
+    <!--配置消费者-->
+    <bean class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop" id="pooledConnectionFactory">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL" value="tcp://192.168.40.128:61616"/>
+            </bean>
+        </property>
+        <property name="maxConnections" value="100"/>
+    </bean>
+    <!--    配置队列的目的地-->
+    <bean class="org.apache.activemq.command.ActiveMQQueue" id="destinationQueue">
+        <constructor-arg name="name" value="queue1"/>
+    </bean>
+    <!-- 配置主题的目的地 如果目的地使用的是主题的话 下面的defaultDestination也需要改变-->
+    <!--    <bean class="org.apache.activemq.command.ActiveMQTopic" id="destinationTopic">-->
+    <!--        <constructor-arg name="name" value="topic1"/>-->
+    <!--    </bean>-->
+    <!--    ActiveMQ的工具类-->
+    <bean class="org.springframework.jms.core.JmsTemplate" id="jmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="defaultDestination" ref="destinationQueue"/>
+        <!--        <property name="defaultDestination" ref="destinationTopic"/>-->
+        <property name="messageConverter">
+            <bean class="org.springframework.jms.support.converter.SimpleMessageConverter"/>
+        </property>
+    </bean>
+</beans>
